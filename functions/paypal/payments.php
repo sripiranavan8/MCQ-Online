@@ -47,8 +47,8 @@ if (Input::exists()) {
                     ],
                 ],
                 "application_context" => [
-                    "cancel_url" => "http://localhost/PHP/My/OnlieQuiz/includes/paypal/cancel.php",
-                    "return_url" => "http://localhost/PHP/My/OnlieQuiz/includes/paypal/return.php"
+                    "cancel_url" => Config::get('urls/root_url') . "includes/paypal/cancel.php",
+                    "return_url" => Config::get('urls/root_url') . "includes/paypal/return.php"
                 ]
             ];
 
