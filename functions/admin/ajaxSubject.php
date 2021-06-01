@@ -50,12 +50,15 @@ $data = array();
 $count = 0;
 foreach ($subjectRecords as $row) {
     $count++;
+    $output = openssl_encrypt($row['id'], Config::get('encryption/method'), Config::get('encryption/key'), 0, Config::get('encryption/iv'));
+    $encryptId = base64_encode($output);
     $data[] = array(
         'id' => $count,
         'name' => $row['name'],
         'exam_fee' => $row['exam_fee'],
         'created_at' => $row['created_at'],
-        'actions' => '<a class="btn btn-sm btn-danger" onclick="deleteSubject(' . $row['id'] . ')"><i class="bi bi-trash"></i> Delete</a>'
+        'actions' => '<a class="btn btn-sm btn-warning" onclick="viewSubject(' . $row['id'] . ')"><i class="bi bi-eye"></i> View</a>
+        <a class="btn btn-sm btn-danger" onclick="deleteSubject(\'' . $encryptId . '\')"><i class="bi bi-trash"></i> Delete</a>'
     );
 }
 

@@ -15,6 +15,11 @@ $GLOBALS['config'] = array(
         'session_name' => 'user',
         'token_name' => 'token'
     ),
+    'encryption' => array(
+        'key' => 'your Key',
+        'method' => 'AES-256-CBC',
+        'iv' => 'iv secret key',
+    ),
     'urls' => array('root_url' => $server . $directoryPath),
     'root' => array('root_path' => $directoryPath),
     'paypal' => array(

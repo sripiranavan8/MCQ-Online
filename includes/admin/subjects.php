@@ -177,8 +177,58 @@ if (Session::exists('validation')) {
         </script>
     <?php }
     ?>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function deleteSubject(id) {
+        function deleteSubject(data) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This will delete all the subject related questions and answers!!!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '../../functions/admin/subject/delete.php',
+                        type: 'post',
+                        data: {
+                            data
+                        },
+                        success: function(response) {
+                            let res = JSON.parse(response)
+                            if (res.status == 200) {
+                                Swal.fire(
+                                    'Deleted!',
+                                    'Subject has been deleted.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Something went wrong!'
+                                })
+                                console.log(res.message);
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'Something went wrong!'
+                            })
+                            console.log(textStatus, errorThrown);
+                        }
+                    });
+                }
+            })
+        }
+
+        function viewSubject(id) {
 
         }
         $(document).ready(function() {
