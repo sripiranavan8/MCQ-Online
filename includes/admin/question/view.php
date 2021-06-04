@@ -1,10 +1,26 @@
 <?php
-include_once("../../config/init.php");
-include_once("../../includes/partials/htmlheader.php");
+require_once '../../../config/init.php';
+include_once("../../../includes/partials/htmlheader.php");
 $user = new User();
 if (!$user->isLoggedIn()) {
-    Redirect::to('../../login.php');
+    Redirect::to('../../../login.php');
 }
+
+$data = $_GET['question'];
+$questionId = openssl_decrypt(base64_decode($data), Config::get('encryption/method'), Config::get('encryption/key'), 0, Config::get('encryption/iv'));
+$question = new Question();
+$question->find($questionId);
+
+$error = null;
+if (Session::exists('errors')) {
+    $error = Session::get('errors');
+    Session::delete('errors');
+}
+if (Session::exists('validation')) {
+    $validation = Session::get('validation');
+    Session::delete('validation');
+}
+
 ?>
 
 <head>
@@ -26,7 +42,7 @@ if (!$user->isLoggedIn()) {
 
 
     <!-- Custom styles for this template -->
-    <link href="../../public/css/dashboard.css" rel="stylesheet">
+    <link href="../../../public/css/dashboard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 </head>
 
@@ -50,32 +66,27 @@ if (!$user->isLoggedIn()) {
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link" aria-current="page" href="home.php">
+                            <a class="nav-link" aria-current="page" href="../home.php">
                                 <i class="bi bi-speedometer2"></i>
                                 Dashboard
                             </a>
                         </li>
                         <hr />
                         <li class="nav-item">
-                            <a class="nav-link" href="subjects.php">
+                            <a class="nav-link" href="../subjects.php">
                                 <i class="bi bi-journals"></i>
                                 Subjects
                             </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link" href="questions.php">
-                                <i class="bi bi-journal-check"></i>
-                                Questions
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="answers.php">
+                            <a class="nav-link active">
                                 <i class="bi bi-journal-code"></i>
                                 Answers
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="history.php">
+                            <a class="nav-link" href="../history.php">
                                 <i class="bi bi-clock-history"></i>
                                 History
                             </a>
@@ -86,17 +97,15 @@ if (!$user->isLoggedIn()) {
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Questions answers</h1>
+                    <h1 class="h2"><?php echo $question->data()->question; ?>&nbsp;'s Answers</h1>
                 </div>
-
                 <div class="table-responsive">
-                    <table class="table table-striped table-sm" id="answerTable">
+                    <table class="table table-striped table-sm" id="questionTable">
                         <thead>
                             <tr>
                                 <th>#</th>
                                 <th>Answer</th>
-                                <th>Question</th>
-                                <th>Is answer correct</th>
+                                <th>Is the answer is correct</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -105,29 +114,31 @@ if (!$user->isLoggedIn()) {
             </main>
         </div>
     </div>
+
     <?php
-    include_once("../../includes/partials/script.php");
+    include_once("../../../includes/partials/script.php");
     ?>
     <script>
-        function deleteSubject(id) {
+        function deleteAnswer(id) {
 
         }
         $(document).ready(function() {
-            $('#answerTable').DataTable({
+            $('#questionTable').DataTable({
                 'processing': true,
                 'serverSide': true,
                 'serverMethod': 'post',
                 'ajax': {
-                    'url': '../../functions/admin/ajaxAnswer.php'
+                    'url': '../../../functions/admin/question/ajaxAnswer.php',
+                    'type': 'post',
+                    'data': {
+                        'subjectId': '<?php echo $data; ?>'
+                    }
                 },
                 'columns': [{
                         data: 'answerId'
                     },
                     {
                         data: 'answer'
-                    },
-                    {
-                        data: 'question'
                     },
                     {
                         data: 'isCorrect'

@@ -55,9 +55,9 @@ foreach ($subjectRecords as $row) {
     $data[] = array(
         'id' => $count,
         'name' => $row['name'],
-        'exam_fee' => $row['exam_fee'],
+        'exam_fee' => 'AUD ' . number_format((float)$row['exam_fee'], 2, '.', ''),
         'created_at' => $row['created_at'],
-        'actions' => '<a class="btn btn-sm btn-warning" onclick="viewSubject(' . $row['id'] . ')"><i class="bi bi-eye"></i> View</a>
+        'actions' => '<a class="btn btn-sm btn-warning" onclick="viewSubject(\'' . $encryptId . '\')"><i class="bi bi-eye"></i> View</a>
         <a class="btn btn-sm btn-danger" onclick="deleteSubject(\'' . $encryptId . '\')"><i class="bi bi-trash"></i> Delete</a>'
     );
 }

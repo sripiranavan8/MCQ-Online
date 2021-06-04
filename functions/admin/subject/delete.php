@@ -3,6 +3,7 @@ require_once '../../../config/init.php';
 
 $data = $_POST['data'];
 $subjectId = openssl_decrypt(base64_decode($data), Config::get('encryption/method'), Config::get('encryption/key'), 0, Config::get('encryption/iv'));
+
 $subject = new Subject();
 if ($subject->find($subjectId)) {
     $subjectName = $subject->data()->name;

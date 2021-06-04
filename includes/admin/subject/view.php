@@ -1,10 +1,15 @@
 <?php
-include_once("../../config/init.php");
-include_once("../../includes/partials/htmlheader.php");
+require_once '../../../config/init.php';
+include_once("../../../includes/partials/htmlheader.php");
 $user = new User();
 if (!$user->isLoggedIn()) {
-    Redirect::to('../../login.php');
+    Redirect::to('../../../login.php');
 }
+
+$data = $_GET['subject'];
+$subjectId = openssl_decrypt(base64_decode($data), Config::get('encryption/method'), Config::get('encryption/key'), 0, Config::get('encryption/iv'));
+$subject = new Subject();
+$subject->find($subjectId);
 
 $error = null;
 if (Session::exists('errors')) {
@@ -15,6 +20,7 @@ if (Session::exists('validation')) {
     $validation = Session::get('validation');
     Session::delete('validation');
 }
+
 ?>
 
 <head>
@@ -36,7 +42,7 @@ if (Session::exists('validation')) {
 
 
     <!-- Custom styles for this template -->
-    <link href="../../public/css/dashboard.css" rel="stylesheet">
+    <link href="../../../public/css/dashboard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 </head>
 
@@ -60,20 +66,26 @@ if (Session::exists('validation')) {
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link" aria-current="page" href="home.php">
+                            <a class="nav-link" aria-current="page" href="../home.php">
                                 <i class="bi bi-speedometer2"></i>
                                 Dashboard
                             </a>
                         </li>
                         <hr />
                         <li class="nav-item">
-                            <a class="nav-link active" href="subjects.php">
+                            <a class="nav-link" href="../subjects.php">
                                 <i class="bi bi-journals"></i>
                                 Subjects
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="history.php">
+                            <a class="nav-link active">
+                                <i class="bi bi-journal-check"></i>
+                                Question
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../history.php">
                                 <i class="bi bi-clock-history"></i>
                                 History
                             </a>
@@ -84,22 +96,23 @@ if (Session::exists('validation')) {
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Exam Subjects</h1>
+                    <h1 class="h2"><?php echo $subject->data()->name; ?>&nbsp; Exam Questions</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group me-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary active">View Subjects</button>
-                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#exampleModal">Add new Subject</button>
+                            <p>Exam Fee: &nbsp;&nbsp;</p>
+                            <p><?php echo " AUD " . number_format($subject->data()->exam_fee, 2, '.', ''); ?></p>
                         </div>
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-striped table-sm" id="subjectTable">
+                    <table class="table table-striped table-sm" id="questionTable">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Name</th>
-                                <th>Exam fee</th>
-                                <th>Created At</th>
+                                <th>Question</th>
+                                <th>Image</th>
+                                <th>Is Multiple Answer</th>
+                                <th>Subject</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -108,69 +121,16 @@ if (Session::exists('validation')) {
             </main>
         </div>
     </div>
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add New Subject</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="../../functions/admin/addSubject.php" method="post">
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-12 form-group">
-                                <label for="subject">Subject Name</label>
-                                <input type="text" name="subject" id="subject" class="form-control <?php if (isset($error)) {
-                                                                                                        if ($error['subject']) { ?> is-invalid <?php }
-                                                                                                                                        } ?>">
-                                <?php
-                                if (isset($error)) {
-                                    if ($error['subject']) { ?>
-                                        <span class="invalid-feedback" role="alert"><?php echo $error['subject']; ?></span>
-                                <?php }
-                                } ?>
-                            </div>
-                            <div class="col-12 form-group">
-                                <label for="examFee">Exam fee</label>
-                                <input type="text" name="examFee" id="examFee" class="form-control <?php if (isset($error)) {
-                                                                                                        if ($error['examFee']) { ?> is-invalid <?php }
-                                                                                                                                        } ?>">
-                                <?php
-                                if (isset($error)) {
-                                    if ($error['examFee']) { ?>
-                                        <span class="invalid-feedback" role="alert"><?php echo $error['examFee']; ?></span>
-                                <?php }
-                                } ?>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <input type="hidden" name="token" value="<?php echo Token::generate(); ?>">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button class="btn btn-primary" type="submit">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+
     <?php
-    include_once("../../includes/partials/script.php");
-    ?>
-    <?php
-    if (isset($error)) { ?>
-        <script type="text/javascript">
-            $(document).ready(function() {
-                $('#exampleModal').modal('show');
-            });
-        </script>
-    <?php }
+    include_once("../../../includes/partials/script.php");
     ?>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function deleteSubject(data) {
+        function deleteQuestion(data) {
             Swal.fire({
                 title: 'Are you sure?',
-                text: "This will delete all the subject related questions and answers!!!",
+                text: "This will delete all the questions related answers too!!!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -179,7 +139,7 @@ if (Session::exists('validation')) {
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '../../functions/admin/subject/delete.php',
+                        url: '../../../functions/admin/question/delete.php',
                         type: 'post',
                         data: {
                             data
@@ -217,28 +177,35 @@ if (Session::exists('validation')) {
             })
         }
 
-        function viewSubject(data) {
-            window.location.replace("<?php echo Config::get('urls/root_url') . 'includes/admin/subject/view.php?subject='; ?>" + data)
+        function viewQuestion(data) {
+            window.location.replace("<?php echo Config::get('urls/root_url') . 'includes/admin/question/view.php?question='; ?>" + data)
         }
         $(document).ready(function() {
-            $('#subjectTable').DataTable({
+            $('#questionTable').DataTable({
                 'processing': true,
                 'serverSide': true,
                 'serverMethod': 'post',
                 'ajax': {
-                    'url': '../../functions/admin/ajaxSubject.php'
+                    'url': '../../../functions/admin/subject/ajaxQuestion.php',
+                    'type': 'post',
+                    'data': {
+                        'subjectId': '<?php echo $data; ?>'
+                    }
                 },
                 'columns': [{
-                        data: 'id'
+                        data: 'questionId'
                     },
                     {
-                        data: 'name'
+                        data: 'question'
                     },
                     {
-                        data: 'exam_fee'
+                        data: 'image'
                     },
                     {
-                        data: 'created_at'
+                        data: 'isMultiple'
+                    },
+                    {
+                        data: 'subject'
                     },
                     {
                         data: 'actions'

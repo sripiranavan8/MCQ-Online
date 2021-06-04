@@ -1,6 +1,9 @@
 <?php
-require_once '../../config/init.php';
+require_once '../../../config/init.php';
 // Read value
+$data = $_POST['subjectId'];
+$subjectId = openssl_decrypt(base64_decode($data), Config::get('encryption/method'), Config::get('encryption/key'), 0, Config::get('encryption/iv'));
+
 $draw = $_POST['draw'];
 $row = $_POST['start'];
 $rowperpage = $_POST['length'];
@@ -54,8 +57,7 @@ foreach ($subjectRecords as $row) {
         'answerId' => $count,
         'answer' => $row['answer'],
         'isCorrect' => $row['isCorrect'] == 0 ? 'No' : 'Yes',
-        'question' => $row['question'],
-        'actions' => '<a class="btn btn-sm btn-danger" onclick="deleteSubject(' . $row['answerId'] . ')"><i class="bi bi-trash"></i> Delete</a>'
+        'actions' => '<a class="btn btn-sm btn-danger" onclick="deleteAnswer(' . $row['answerId'] . ')"><i class="bi bi-trash"></i> Delete</a>'
     );
 }
 
